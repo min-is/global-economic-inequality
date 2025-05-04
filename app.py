@@ -213,20 +213,13 @@ def update_figure(selected_variable):
 def update_scatter_plot(selected_variable):
     return create_scatter_analysis(2023)
 
-@app.callback(
-    Output('country-comparison', 'figure'),
-    Input('variable-dropdown', 'value')
-)
-def update_country_comparison(selected_variable):
-    return create_country_comparison(['United States', 'China', 'India', 'Germany'])  # Changed from 'United States of America'
-
 
 @app.callback(
     Output('country-comparison', 'figure'),
     Input('variable-dropdown', 'value')
 )
 def update_country_comparison(selected_variable):
-    return create_country_comparison(['United States of America', 'China', 'India', 'Germany'])
+    return create_country_comparison(['United States', 'China', 'India', 'Germany'])
 
 if __name__ == '__main__':
     app.run_server(debug=False)
