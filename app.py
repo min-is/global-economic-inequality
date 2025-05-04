@@ -87,34 +87,58 @@ def create_scatter_analysis(year=2023):
     return fig
 
 def create_country_comparison(countries):
-    country_df = df[df['Country Name'].isin(countries)]
+    country_df = df[df['Country Name'].isin(countries)].copy()
+    
+    # Convert Year to numeric and filter valid range
+    country_df['Year'] = pd.to_numeric(country_df['Year'], errors='coerce')
+    country_df = country_df[(country_df['Year'] >= 2000) & (country_df['Year'] <= 2023)]
+    
+    # Handle missing values
+    country_df['GDP_per_capita'] = country_df['GDP_per_capita'].interpolate()
+    country_df['Gini Index'] = country_df.groupby('Country Name')['Gini Index'].ffill().bfill()
+    
     fig = go.Figure()
+    
     for country in countries:
+        country_data = country_df[country_df['Country Name'] == country]
+        
+        # GDP per Capita (Primary Axis)
         fig.add_trace(go.Scatter(
-            x=country_df[country_df['Country Name'] == country]['Year'],
-            y=country_df[country_df['Country Name'] == country]['GDP_per_capita'],
+            x=country_data['Year'],
+            y=country_data['GDP_per_capita'],
             name=f"{country} GDP/cap",
-            yaxis='y1'
+            yaxis='y1',
+            line=dict(width=2)
         ))
+        
+        # Gini Index (Secondary Axis)
         fig.add_trace(go.Scatter(
-            x=country_df[country_df['Country Name'] == country]['Year'],
-            y=country_df[country_df['Country Name'] == country]['Gini Index'],
+            x=country_data['Year'],
+            y=country_data['Gini Index'],
             name=f"{country} Gini",
             yaxis='y2',
-            line=dict(dash='dot')
+            line=dict(dash='dot', width=2)
         ))
+    
     fig.update_layout(
-        margin=dict(l=20, r=20, t=60, b=20),
-        title="Country Economic Comparison",
-        yaxis=dict(title='GDP per Capita (USD)', type='log'),
+        title="Country Economic Comparison (2000-2023)",
+        xaxis=dict(title='Year', tickmode='linear'),
+        yaxis=dict(
+            title='GDP per Capita (USD)',
+            type='log',
+            range=[2, 5]  # Log range for 100 to 100,000 USD
+        ),
         yaxis2=dict(
             title='Gini Index',
             overlaying='y',
-            side='right'
+            side='right',
+            range=[20, 60]  # Standard Gini scale range
         ),
-        hovermode='x unified'
+        hovermode='x unified',
+        legend=dict(x=1.1, y=1.1)
     )
     return fig
+
 
 # App Layout
 app.layout = dbc.Container([
@@ -131,7 +155,6 @@ app.layout = dbc.Container([
                         options=[
                             {'label': 'GDP per capita', 'value': 'GDP_per_capita'},
                             {'label': 'Gini Index', 'value': 'Gini Index'},
-                            # {'label': 'HDI', 'value': 'HDI'}, # Uncomment if HDI exists in your data
                         ],
                         value='GDP_per_capita',
                         clearable=False,
