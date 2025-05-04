@@ -120,6 +120,7 @@ def create_country_comparison(countries):
 
 # Initialize Dash app
 app = dash.Dash(__name__)
+server = app.server
 
 # Define layout
 app.layout = html.Div([
@@ -170,6 +171,5 @@ def update_scatter_plot(selected_variable):
 def update_country_comparison(selected_variable):
     return create_country_comparison(['United States of America', 'China', 'India', 'Germany'])
 
-# Run app locally (Heroku uses dynamic port)
 if __name__ == '__main__':
-    app.run_server(debug=True, port=int(os.environ.get("PORT", 8050)), host="0.0.0.0")
+    app.run_server(debug=False) 
