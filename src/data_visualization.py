@@ -7,11 +7,9 @@ import plotly.io as pio
 pio.renderers.default = 'browser'
 
 
-# Load cleaned data
 path = 'https://raw.githubusercontent.com/min-is/global-economic-inequality/refs/heads/main/data/processed/global_economic_data.csv'
 df = pd.read_csv(path)
 
-# Rename columns if necessary to match database schema
 df.rename(columns={
     'country_code': 'Country Code',
     'country_name': 'Country Name',
@@ -23,7 +21,6 @@ df.rename(columns={
     'decade': 'Decade'
 }, inplace=True)
 
-# 1. Interactive Choropleth Map with Time Slider
 def create_choropleth_map(metric='GDP_per_capita'):
     fig = px.choropleth(
         df.dropna(subset=[metric]),
@@ -54,7 +51,6 @@ def create_choropleth_map(metric='GDP_per_capita'):
     )
     return fig
 
-# 2. Radial Bar Plot for Decadal Analysis
 def create_radial_plot():
     plt.figure(figsize=(12, 12))
     ax = plt.subplot(111, polar=True)
@@ -90,7 +86,6 @@ def create_radial_plot():
     plt.legend(loc='upper right')
     return plt
 
-# 3. Enhanced Scatter Plot with Regression
 def create_scatter_analysis(year=2023):
     year_df = df[df['Year'] == year].dropna(subset=['GDP_per_capita', 'Gini Index'])
     
@@ -120,14 +115,13 @@ def create_scatter_analysis(year=2023):
     )
     return fig
 
-# 4. Dual-Axis Time Series for Country Comparison
 def create_country_comparison(countries):
     country_df = df[df['Country Name'].isin(countries)]
     
     fig = go.Figure()
     
     for country in countries:
-        # GDP per Capita (Primary Axis)
+        # gdp per capita
         fig.add_trace(go.Scatter(
             x=country_df[country_df['Country Name'] == country]['Year'],
             y=country_df[country_df['Country Name'] == country]['GDP_per_capita'],
@@ -135,7 +129,7 @@ def create_country_comparison(countries):
             yaxis='y1'
         ))
         
-        # Gini Index (Secondary Axis)
+        # gini index
         fig.add_trace(go.Scatter(
             x=country_df[country_df['Country Name'] == country]['Year'],
             y=country_df[country_df['Country Name'] == country]['Gini Index'],
@@ -156,7 +150,6 @@ def create_country_comparison(countries):
     )
     return fig
 
-# Generate and display all visualizations
 if __name__ == "__main__":
     choropleth_fig = create_choropleth_map('GDP_per_capita')
     choropleth_fig.show()
