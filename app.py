@@ -27,11 +27,6 @@ df.rename(columns={
     'decade': 'Decade'
 }, inplace=True)
 
-valid_countries = ['United States', 'China', 'India', 'Germany']
-missing = [c for c in valid_countries if c not in df['Country Name'].unique()]
-if missing:
-    print(f"Missing countries: {missing}. Check data for alternative names.")
-
 # Visualization functions (as before)
 def create_choropleth_map(metric='GDP_per_capita'):
     fig = px.choropleth(
@@ -223,7 +218,7 @@ def update_scatter_plot(selected_variable):
     Input('variable-dropdown', 'value')
 )
 def update_country_comparison(selected_variable):
-    return create_country_comparison(['United States', 'China', 'India', 'Germany']) 
+    return create_country_comparison(['United States', 'China', 'India', 'Germany'])  # Changed from 'United States of America'
 
 
 @app.callback(
