@@ -193,7 +193,7 @@ app.layout = dbc.Container([
             html.P("Made using Dash & Plotly", className="text-center text-muted")
         ]), width=12)
     ])
-], fluid=True, style={'backgroundColor': '#f8f9fa'})
+], fluid=True, style={'backgroundColor': '#222', 'color': '#f8f9fa'})
 
 # Callbacks
 @app.callback(
