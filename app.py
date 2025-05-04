@@ -1,3 +1,4 @@
+import os
 import dash
 from dash import dcc, html
 import plotly.express as px
@@ -46,6 +47,6 @@ app.layout = html.Div([
 def update_figure(selected_variable):
     return create_choropleth_map(selected_variable)
 
-# Run app locally
+# Run app locally (for Heroku, PORT is set dynamically)
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, port=int(os.environ.get("PORT", 8050)), host="0.0.0.0")
