@@ -137,7 +137,7 @@ def create_country_comparison(countries):
     return fig
 
 
-# App Layout
+# Layout
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col(html.H1("🌍 Global Economic Inequality Dashboard", className="text-center mb-4"), width=12)
