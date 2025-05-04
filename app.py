@@ -1,15 +1,21 @@
 import os
 import dash
-from dash import dcc, html
+from dash import dcc, html, Input, Output
+import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 
-# Load your cleaned data
-df = pd.read_csv("https://raw.githubusercontent.com/min-is/global-economic-inequality/main/data/processed/global_economic_data.csv")
+# Bootstrap theme
+external_stylesheets = [dbc.themes.LUX]
 
-# Rename columns to match those in the visualization code
+# Initialize Dash app with Bootstrap
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server  # For Heroku
+
+# Load data
+df = pd.read_csv("https://raw.githubusercontent.com/min-is/global-economic-inequality/main/data/processed/global_economic_data.csv")
 df.rename(columns={
     'country_code': 'Country Code',
     'country_name': 'Country Name',
@@ -21,7 +27,7 @@ df.rename(columns={
     'decade': 'Decade'
 }, inplace=True)
 
-# Create a choropleth map
+# Visualization functions (as before)
 def create_choropleth_map(metric='GDP_per_capita'):
     fig = px.choropleth(
         df.dropna(subset=[metric]),
@@ -34,8 +40,8 @@ def create_choropleth_map(metric='GDP_per_capita'):
         labels={metric: metric.replace('_', ' ').title()},
         title=f"Global {metric.replace('_', ' ').title()} Evolution (2000-2023)"
     )
-    
     fig.update_layout(
+        margin=dict(l=20, r=20, t=60, b=20),
         coloraxis_colorbar=dict(
             title='Log Scale' if 'gdp' in metric.lower() else 'Scale',
             tickvals=np.logspace(
@@ -52,10 +58,8 @@ def create_choropleth_map(metric='GDP_per_capita'):
     )
     return fig
 
-# Create scatter plot analysis
 def create_scatter_analysis(year=2023):
     year_df = df[df['Year'] == year].dropna(subset=['GDP_per_capita', 'Gini Index'])
-    
     fig = px.scatter(
         year_df,
         x='GDP_per_capita',
@@ -71,8 +75,8 @@ def create_scatter_analysis(year=2023):
             'Gini Index': 'Income Inequality (Gini Index)'
         }
     )
-    
     fig.update_layout(
+        margin=dict(l=20, r=20, t=60, b=20),
         xaxis=dict(
             type='log',
             range=[np.log10(year_df['GDP_per_capita'].min()), 
@@ -82,22 +86,16 @@ def create_scatter_analysis(year=2023):
     )
     return fig
 
-# Create country comparison plot
 def create_country_comparison(countries):
     country_df = df[df['Country Name'].isin(countries)]
-    
     fig = go.Figure()
-    
     for country in countries:
-        # GDP per Capita (Primary Axis)
         fig.add_trace(go.Scatter(
             x=country_df[country_df['Country Name'] == country]['Year'],
             y=country_df[country_df['Country Name'] == country]['GDP_per_capita'],
             name=f"{country} GDP/cap",
             yaxis='y1'
         ))
-        
-        # Gini Index (Secondary Axis)
         fig.add_trace(go.Scatter(
             x=country_df[country_df['Country Name'] == country]['Year'],
             y=country_df[country_df['Country Name'] == country]['Gini Index'],
@@ -105,8 +103,8 @@ def create_country_comparison(countries):
             yaxis='y2',
             line=dict(dash='dot')
         ))
-    
     fig.update_layout(
+        margin=dict(l=20, r=20, t=60, b=20),
         title="Country Economic Comparison",
         yaxis=dict(title='GDP per Capita (USD)', type='log'),
         yaxis2=dict(
@@ -118,58 +116,86 @@ def create_country_comparison(countries):
     )
     return fig
 
-# Initialize Dash app
-app = dash.Dash(__name__)
-server = app.server
+# App Layout
+app.layout = dbc.Container([
+    dbc.Row([
+        dbc.Col(html.H1("🌍 Global Economic Inequality Dashboard", className="text-center mb-4"), width=12)
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H5("Select Economic Metric", className="card-title"),
+                    dcc.Dropdown(
+                        id='variable-dropdown',
+                        options=[
+                            {'label': 'GDP per capita', 'value': 'GDP_per_capita'},
+                            {'label': 'Gini Index', 'value': 'Gini Index'},
+                            # {'label': 'HDI', 'value': 'HDI'}, # Uncomment if HDI exists in your data
+                        ],
+                        value='GDP_per_capita',
+                        clearable=False,
+                        style={'color': '#000'}
+                    ),
+                ])
+            ], className="mb-4 shadow-sm")
+        ], width=4),
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H5("Choropleth Map", className="card-title"),
+                    dcc.Loading(dcc.Graph(id='choropleth-map', config={'displayModeBar': False}), type="circle")
+                ])
+            ], className="mb-4 shadow-sm")
+        ], width=8)
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H5("Wealth vs Inequality (2023)", className="card-title"),
+                    dcc.Loading(dcc.Graph(id='scatter-plot', config={'displayModeBar': False}), type="circle")
+                ])
+            ], className="mb-4 shadow-sm")
+        ], width=6),
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H5("Country Comparison", className="card-title"),
+                    dcc.Loading(dcc.Graph(id='country-comparison', config={'displayModeBar': False}), type="circle")
+                ])
+            ], className="mb-4 shadow-sm")
+        ], width=6)
+    ]),
+    dbc.Row([
+        dbc.Col(html.Footer([
+            html.Hr(),
+            html.P("Made with ❤️ using Dash & Plotly", className="text-center text-muted")
+        ]), width=12)
+    ])
+], fluid=True, style={'backgroundColor': '#f8f9fa'})
 
-# Define layout
-app.layout = html.Div([
-    html.H1("Global Economic Inequality"),
-    
-    # Dropdown for variable selection
-    dcc.Dropdown(
-        id='variable-dropdown',
-        options=[
-            {'label': 'GDP per capita', 'value': 'GDP_per_capita'},
-            {'label': 'Gini Index', 'value': 'gini_index'},
-            {'label': 'HDI', 'value': 'HDI'}
-        ],
-        value='GDP_per_capita'
-    ),
-    
-    # Choropleth map
-    dcc.Graph(id='choropleth-map'),
-    
-    # Scatter plot for 2023
-    dcc.Graph(id='scatter-plot'),
-    
-    # Country comparison plot
-    dcc.Graph(id='country-comparison')
-])
-
-# Callback to update choropleth map based on selected variable
+# Callbacks
 @app.callback(
-    dash.dependencies.Output('choropleth-map', 'figure'),
-    [dash.dependencies.Input('variable-dropdown', 'value')]
+    Output('choropleth-map', 'figure'),
+    Input('variable-dropdown', 'value')
 )
 def update_figure(selected_variable):
     return create_choropleth_map(selected_variable)
 
-# Update scatter plot for 2023
 @app.callback(
-    dash.dependencies.Output('scatter-plot', 'figure'),
-    [dash.dependencies.Input('variable-dropdown', 'value')]
+    Output('scatter-plot', 'figure'),
+    Input('variable-dropdown', 'value')
 )
 def update_scatter_plot(selected_variable):
     return create_scatter_analysis(2023)
 
-# Update country comparison plot
 @app.callback(
-    dash.dependencies.Output('country-comparison', 'figure'),
-    [dash.dependencies.Input('variable-dropdown', 'value')]
+    Output('country-comparison', 'figure'),
+    Input('variable-dropdown', 'value')
 )
 def update_country_comparison(selected_variable):
     return create_country_comparison(['United States of America', 'China', 'India', 'Germany'])
 
 if __name__ == '__main__':
-    app.run_server(debug=False) 
+    app.run_server(debug=False)

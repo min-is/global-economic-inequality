@@ -6,3 +6,4 @@ gunicorn
 matplotlib
 dash
 Flask
+dash-bootstrap-components
