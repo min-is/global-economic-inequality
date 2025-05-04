@@ -7,14 +7,11 @@ import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 
-# Bootstrap theme
-external_stylesheets = [dbc.themes.LUX]
+external_stylesheets = [dbc.themes.SLATE]
 
-# Initialize Dash app with Bootstrap
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-server = app.server  # For Heroku
+server = app.server  
 
-# Load data
 df = pd.read_csv("https://raw.githubusercontent.com/min-is/global-economic-inequality/main/data/processed/global_economic_data.csv")
 df.rename(columns={
     'country_code': 'Country Code',
@@ -27,7 +24,6 @@ df.rename(columns={
     'decade': 'Decade'
 }, inplace=True)
 
-# Visualization functions (as before)
 def create_choropleth_map(metric='GDP_per_capita'):
     fig = px.choropleth(
         df.dropna(subset=[metric]),
@@ -41,6 +37,7 @@ def create_choropleth_map(metric='GDP_per_capita'):
         title=f"Global {metric.replace('_', ' ').title()} Evolution (2000-2023)"
     )
     fig.update_layout(
+        template = 'plotly_dark',
         margin=dict(l=20, r=20, t=60, b=20),
         coloraxis_colorbar=dict(
             title='Log Scale' if 'gdp' in metric.lower() else 'Scale',
@@ -76,6 +73,7 @@ def create_scatter_analysis(year=2023):
         }
     )
     fig.update_layout(
+        template = 'plotly_dark',
         margin=dict(l=20, r=20, t=60, b=20),
         xaxis=dict(
             type='log',
@@ -101,17 +99,15 @@ def create_country_comparison(countries):
     
     for country in countries:
         country_data = country_df[country_df['Country Name'] == country]
-        
-        # GDP per Capita (Primary Axis)
+
         fig.add_trace(go.Scatter(
             x=country_data['Year'],
             y=country_data['GDP_per_capita'],
-            name=f"{country} GDP/cap",
+            name=f"{country} GDP/capita",
             yaxis='y1',
             line=dict(width=2)
         ))
         
-        # Gini Index (Secondary Axis)
         fig.add_trace(go.Scatter(
             x=country_data['Year'],
             y=country_data['Gini Index'],
@@ -121,18 +117,19 @@ def create_country_comparison(countries):
         ))
     
     fig.update_layout(
+        template = 'plotly_dark',
         title="Country Economic Comparison (2000-2023)",
         xaxis=dict(title='Year', tickmode='linear'),
         yaxis=dict(
             title='GDP per Capita (USD)',
             type='log',
-            range=[2, 5]  # Log range for 100 to 100,000 USD
+            range=[2, 5]  
         ),
         yaxis2=dict(
             title='Gini Index',
             overlaying='y',
             side='right',
-            range=[20, 60]  # Standard Gini scale range
+            range=[20, 60] 
         ),
         hovermode='x unified',
         legend=dict(x=1.1, y=1.1)
@@ -193,7 +190,7 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col(html.Footer([
             html.Hr(),
-            html.P("Made with ❤️ using Dash & Plotly", className="text-center text-muted")
+            html.P("Made using Dash & Plotly", className="text-center text-muted")
         ]), width=12)
     ])
 ], fluid=True, style={'backgroundColor': '#f8f9fa'})
