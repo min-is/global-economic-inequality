@@ -1,5 +1,7 @@
 # Global Economic Inequality Analysis
 
+View the deployment here: [Heroku](https://global-economic-inequality-b32455331af0.herokuapp.com/)
+
 ## Project Overview
 A comprehensive analysis of global economic inequality using multimodal data visualization and analysis techniques. The project integrates GDP, income distribution, and human development indices to provide insights into global socioeconomic disparities.
 
