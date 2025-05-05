@@ -5,15 +5,8 @@ View the deployment here: [Heroku](https://global-economic-inequality-b32455331a
 ## Project Overview
 A comprehensive analysis of global economic inequality using multimodal data visualization and analysis techniques. The project integrates GDP, income distribution, and human development indices to provide insights into global socioeconomic disparities.
 
-## Architecture
-The project follows a modular architecture with clear separation between:
-- Data acquisition and processing pipelines
-- Analysis and feature engineering components
-- Visualization
 
-All components are organized following professional data science best practices.
-
-### Key Components:
+### Components:
 - SQL-based ETL pipelines for data integration
 - Python data processing modules for transformation and analysis
 - Interactive visualizations using Plotly and Matplotlib
@@ -27,9 +20,6 @@ The insights from this analysis can inform:
 - Resource allocation for poverty reduction programs
 - Identification of regions needing targeted interventions
 - Understanding the relationship between economic growth and human development
-
-## Contributors
-Isaac Min - Lead Data Scientist
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
